@@ -29,31 +29,26 @@ interface SisuListResponse {
 
 /**
  * Fetches active clients/transactions from SISU.
- * Uses the specific parameters found during exploration to ensure data retrieval.
+ * Uses a two-step process:
+ * 1. Fetch list of clients (IDs).
+ * 2. Fetch details for each client (to get closing date).
  */
 export async function fetchActiveClients(): Promise<SisuClient[]> {
-    const endpoint = `${BASE_URL}/client/list`;
+    const listEndpoint = `${BASE_URL}/client/list`;
 
+    // Step 1: Get the list (IDs only)
     const body = {
-        market_id: SISU_MARKET_ID,
-        context: 'agent',
-        context_id: SISU_AGENT_ID,
-        column_filter: 'appt_set_dt', // Required parameter
-        limit: 1000, // Fetch enough to cover active deals
-        add_return_columns: [
-            'client_id',
-            'first_name',
-            'last_name',
-            'email',
-            'forecasted_closed_dt',
-            'status_code',
-            'pipeline_status',
-            'appt_set_dt'
-        ]
+        market_id: 0,
+        context: 'team',
+        context_id: 3168, // Team ID
+        column_filter: 'appt_set_dt',
+        limit: 1000,
+        // add_return_columns removed as it breaks the query
     };
 
     try {
-        const response = await fetch(endpoint, {
+        console.log('Fetching client list...');
+        const response = await fetch(listEndpoint, {
             method: 'POST',
             headers: {
                 'Authorization': SISU_AUTH_HEADER!,
@@ -64,18 +59,43 @@ export async function fetchActiveClients(): Promise<SisuClient[]> {
 
         if (!response.ok) {
             const text = await response.text();
-            console.error(`SISU API Error: ${response.status} ${response.statusText} - ${text}`);
-            throw new Error(`Failed to fetch clients: ${response.statusText}`);
+            console.error(`SISU List Error: ${response.status} ${text}`);
+            throw new Error(`Failed to fetch client list: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as SisuListResponse;
+        const data = (await response.json()) as any;
+        const basicClients = data.clients || [];
+        console.log(`Found ${basicClients.length} clients in list. Fetching details...`);
 
-        if (!data.clients) {
-            console.warn('SISU API returned no clients array:', data);
-            return [];
+        // Step 2: Fetch details for each client in batches
+        const detailedClients: SisuClient[] = [];
+        const BATCH_SIZE = 10;
+
+        for (let i = 0; i < basicClients.length; i += BATCH_SIZE) {
+            const batch = basicClients.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map(async (c: any) => {
+                try {
+                    const detailRes = await fetch(`${BASE_URL}/client/edit-client/${c.id}`, {
+                        headers: { 'Authorization': SISU_AUTH_HEADER! }
+                    });
+                    if (detailRes.ok) {
+                        return await detailRes.json();
+                    }
+                    return null;
+                } catch (e) {
+                    console.error(`Failed to fetch details for ${c.id}`, e);
+                    return null;
+                }
+            });
+
+            const results = await Promise.all(batchPromises);
+            const validResults = results.filter(r => r !== null);
+            detailedClients.push(...validResults);
+            console.log(`Fetched details for batch ${i / BATCH_SIZE + 1}/${Math.ceil(basicClients.length / BATCH_SIZE)}`);
         }
 
-        return data.clients;
+        return detailedClients;
+
     } catch (error) {
         console.error('Error fetching SISU clients:', error);
         throw error;
