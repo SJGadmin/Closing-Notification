@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchActiveClients, isWithinDays, getDaysUntil } from '@/lib/sisu';
-import { sendClosingNotification } from '@/lib/email';
+import { sendConsolidatedClosingNotification, type ClosingInfo } from '@/lib/email';
 
 export const dynamic = 'force-dynamic'; // Ensure this route is not cached
 
@@ -20,13 +20,14 @@ export async function GET(request: Request) {
         const clients = await fetchActiveClients();
         console.log(`Fetched ${clients.length} clients.`);
 
-        let notificationsSent = 0;
         const matches: Array<{
             name: string;
             email: string | null;
             closingDate: string;
             daysUntil: number;
         }> = [];
+
+        const closingsToNotify: ClosingInfo[] = [];
 
         // Log some sample dates for debugging
         const clientsWithDates = clients.filter(c => c.forecasted_closed_dt);
@@ -43,26 +44,33 @@ export async function GET(request: Request) {
 
                 const buyerName = `${client.first_name} ${client.last_name}`;
 
-                // Store match details for UI display
-                matches.push({
+                // Store match details for UI display and email
+                const closingInfo = {
                     name: buyerName,
                     email: client.email,
                     closingDate: client.forecasted_closed_dt!,
                     daysUntil
-                });
+                };
 
-                // Send email notification
-                await sendClosingNotification(
+                matches.push(closingInfo);
+                closingsToNotify.push({
                     buyerName,
-                    client.email,
-                    client.forecasted_closed_dt!,
+                    buyerEmail: client.email,
+                    closingDate: client.forecasted_closed_dt!,
                     daysUntil
-                );
-                notificationsSent++;
+                });
             }
         }
 
         console.log(`Total matches found: ${matches.length}`);
+
+        // Send one consolidated email with all closings
+        let notificationsSent = 0;
+        if (closingsToNotify.length > 0) {
+            await sendConsolidatedClosingNotification(closingsToNotify);
+            notificationsSent = 1; // One consolidated email sent
+            console.log(`Sent 1 consolidated email with ${closingsToNotify.length} closing(s)`);
+        }
 
         return NextResponse.json({
             success: true,
