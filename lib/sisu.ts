@@ -103,17 +103,41 @@ export async function fetchActiveClients(): Promise<SisuClient[]> {
 }
 
 /**
- * Checks if a date string is exactly N days from today (ignoring time).
+ * Checks if a date string is N days or fewer from today (ignoring time).
+ * Returns true if the closing date is within the next N days (inclusive).
  */
-export function isDaysAway(dateString: string | null, days: number): boolean {
+export function isWithinDays(dateString: string | null, days: number): boolean {
     if (!dateString) return false;
 
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + days);
-    targetDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + days);
+    maxDate.setHours(0, 0, 0, 0);
 
     const checkDate = new Date(dateString);
     checkDate.setHours(0, 0, 0, 0);
 
-    return checkDate.getTime() === targetDate.getTime();
+    // Check if the date is in the future and within N days
+    return checkDate.getTime() >= today.getTime() && checkDate.getTime() <= maxDate.getTime();
+}
+
+/**
+ * Calculates the number of days between today and a future date.
+ * Returns the number of days (0 if today, negative if in the past).
+ */
+export function getDaysUntil(dateString: string | null): number {
+    if (!dateString) return -999;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const checkDate = new Date(dateString);
+    checkDate.setHours(0, 0, 0, 0);
+
+    const diffTime = checkDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
 }

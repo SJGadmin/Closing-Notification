@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchActiveClients, isDaysAway } from '@/lib/sisu';
+import { fetchActiveClients, isWithinDays, getDaysUntil } from '@/lib/sisu';
 import { sendClosingNotification } from '@/lib/email';
 
 export const dynamic = 'force-dynamic'; // Ensure this route is not cached
@@ -21,16 +21,35 @@ export async function GET(request: Request) {
         console.log(`Fetched ${clients.length} clients.`);
 
         let notificationsSent = 0;
+        const matches: Array<{
+            name: string;
+            email: string | null;
+            closingDate: string;
+            daysUntil: number;
+        }> = [];
 
         for (const client of clients) {
-            if (isDaysAway(client.forecasted_closed_dt, 10)) {
-                console.log(`Match found: ${client.first_name} ${client.last_name} closes on ${client.forecasted_closed_dt}`);
+            // Check if closing is within the next 10 days
+            if (isWithinDays(client.forecasted_closed_dt, 10)) {
+                const daysUntil = getDaysUntil(client.forecasted_closed_dt);
+                console.log(`Match found: ${client.first_name} ${client.last_name} closes in ${daysUntil} days on ${client.forecasted_closed_dt}`);
 
                 const buyerName = `${client.first_name} ${client.last_name}`;
+
+                // Store match details for UI display
+                matches.push({
+                    name: buyerName,
+                    email: client.email,
+                    closingDate: client.forecasted_closed_dt!,
+                    daysUntil
+                });
+
+                // Send email notification
                 await sendClosingNotification(
                     buyerName,
                     client.email,
-                    client.forecasted_closed_dt!
+                    client.forecasted_closed_dt!,
+                    daysUntil
                 );
                 notificationsSent++;
             }
@@ -39,7 +58,8 @@ export async function GET(request: Request) {
         return NextResponse.json({
             success: true,
             clientsChecked: clients.length,
-            notificationsSent
+            notificationsSent,
+            matches
         });
 
     } catch (error) {

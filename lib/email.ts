@@ -10,7 +10,8 @@ const NOTIFICATION_EMAIL = 'grant@stewartandjane.com';
 export async function sendClosingNotification(
     buyerName: string,
     buyerEmail: string | null,
-    closingDate: string
+    closingDate: string,
+    daysUntil: number
 ) {
     if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
         console.warn('Missing SMTP credentials. Email not sent.');
@@ -27,31 +28,39 @@ export async function sendClosingNotification(
         },
     });
 
+    const daysText = daysUntil === 0 ? 'TODAY' :
+                     daysUntil === 1 ? 'tomorrow' :
+                     `in ${daysUntil} days`;
+
+    const urgencyEmoji = daysUntil <= 2 ? '🚨' : daysUntil <= 5 ? '⚠️' : '🏠';
+
     const mailOptions = {
         from: `"SISU Notifier" <${SMTP_USER}>`,
         to: NOTIFICATION_EMAIL,
-        subject: `🏠 Upcoming Closing: ${buyerName}`,
+        subject: `${urgencyEmoji} Closing ${daysText}: ${buyerName}`,
         text: `
       Hello Grant,
 
-      This is a reminder that a transaction is forecasted to close in 10 days.
+      This is a reminder that a transaction is forecasted to close ${daysText}.
 
       Buyer: ${buyerName}
       Email: ${buyerEmail || 'N/A'}
       Forecasted Closing Date: ${closingDate}
+      Days Until Closing: ${daysUntil}
 
       Best,
       SISU Notifier
     `,
         html: `
       <div style="font-family: sans-serif; padding: 20px;">
-        <h2>🏠 Upcoming Closing Reminder</h2>
+        <h2>${urgencyEmoji} Upcoming Closing Reminder</h2>
         <p>Hello Grant,</p>
-        <p>This is a reminder that a transaction is forecasted to close in 10 days.</p>
+        <p>This is a reminder that a transaction is forecasted to close <strong>${daysText}</strong>.</p>
         <ul>
           <li><strong>Buyer:</strong> ${buyerName}</li>
           <li><strong>Email:</strong> ${buyerEmail || 'N/A'}</li>
           <li><strong>Forecasted Closing Date:</strong> ${closingDate}</li>
+          <li><strong>Days Until Closing:</strong> ${daysUntil}</li>
         </ul>
         <p>Best,<br>SISU Notifier</p>
       </div>
