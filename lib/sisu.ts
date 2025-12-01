@@ -79,7 +79,9 @@ export async function fetchActiveClients(): Promise<SisuClient[]> {
                         headers: { 'Authorization': SISU_AUTH_HEADER! }
                     });
                     if (detailRes.ok) {
-                        return await detailRes.json();
+                        const json = await detailRes.json();
+                        // The API returns { "client": { ... } }, so we need to extract the client object
+                        return json.client || json;
                     }
                     return null;
                 } catch (e) {

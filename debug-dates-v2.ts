@@ -1,8 +1,8 @@
-// Load environment variables from .env.local
+// Load environment variables from .env
 import * as fs from 'fs';
 import * as path from 'path';
 
-const envPath = path.join(__dirname, '.env');
+const envPath = path.join(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
     const envFile = fs.readFileSync(envPath, 'utf8');
     envFile.split('\n').forEach(line => {
@@ -22,9 +22,10 @@ if (fs.existsSync(envPath)) {
     console.log('Loaded environment variables from .env\n');
 }
 
-import { fetchActiveClients } from './lib/sisu';
-
+// Now import after env is loaded
 async function debugDates() {
+    const { fetchActiveClients } = await import('./lib/sisu.js');
+
     console.log('--- Debugging SISU Date Formats ---\n');
 
     try {
@@ -61,7 +62,7 @@ async function debugDates() {
         // Find the specific Dec 8 closing
         const dec8Clients = clientsWithDates.filter(c => {
             const dateStr = c.forecasted_closed_dt || '';
-            return dateStr.includes('12/08/2025') || dateStr.includes('2025-12-08') || dateStr.includes('08 Dec 2025');
+            return dateStr.includes('12/08/2025') || dateStr.includes('2025-12-08') || dateStr.includes('08 Dec 2025') || dateStr.includes('Dec 08 2025');
         });
 
         if (dec8Clients.length > 0) {
@@ -73,7 +74,7 @@ async function debugDates() {
             });
         } else {
             console.log('\n\n=== NO DECEMBER 8TH CLOSINGS FOUND ===');
-            console.log('Showing all unique date formats:');
+            console.log('Showing all unique date formats (first 20):');
             const uniqueDates = [...new Set(clientsWithDates.map(c => c.forecasted_closed_dt))];
             uniqueDates.slice(0, 20).forEach(date => {
                 console.log(`  - "${date}"`);
