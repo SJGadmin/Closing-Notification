@@ -119,6 +119,16 @@ export function isWithinDays(dateString: string | null, days: number): boolean {
     const checkDate = new Date(dateString);
     checkDate.setHours(0, 0, 0, 0);
 
+    // Log for debugging
+    console.log(`[isWithinDays] Input: "${dateString}", Parsed: ${checkDate.toISOString()}, Today: ${today.toISOString()}, Max: ${maxDate.toISOString()}`);
+    console.log(`[isWithinDays] Check valid: ${!isNaN(checkDate.getTime())}, In range: ${checkDate.getTime() >= today.getTime() && checkDate.getTime() <= maxDate.getTime()}`);
+
+    // Check if date parsing was successful
+    if (isNaN(checkDate.getTime())) {
+        console.error(`[isWithinDays] Failed to parse date: "${dateString}"`);
+        return false;
+    }
+
     // Check if the date is in the future and within N days
     return checkDate.getTime() >= today.getTime() && checkDate.getTime() <= maxDate.getTime();
 }
@@ -135,6 +145,11 @@ export function getDaysUntil(dateString: string | null): number {
 
     const checkDate = new Date(dateString);
     checkDate.setHours(0, 0, 0, 0);
+
+    if (isNaN(checkDate.getTime())) {
+        console.error(`[getDaysUntil] Failed to parse date: "${dateString}"`);
+        return -999;
+    }
 
     const diffTime = checkDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

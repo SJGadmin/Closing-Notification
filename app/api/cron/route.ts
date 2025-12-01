@@ -28,6 +28,13 @@ export async function GET(request: Request) {
             daysUntil: number;
         }> = [];
 
+        // Log some sample dates for debugging
+        const clientsWithDates = clients.filter(c => c.forecasted_closed_dt);
+        console.log(`Clients with forecasted dates: ${clientsWithDates.length}`);
+        if (clientsWithDates.length > 0) {
+            console.log(`Sample date format: "${clientsWithDates[0].forecasted_closed_dt}"`);
+        }
+
         for (const client of clients) {
             // Check if closing is within the next 10 days
             if (isWithinDays(client.forecasted_closed_dt, 10)) {
@@ -54,6 +61,8 @@ export async function GET(request: Request) {
                 notificationsSent++;
             }
         }
+
+        console.log(`Total matches found: ${matches.length}`);
 
         return NextResponse.json({
             success: true,
