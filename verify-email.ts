@@ -8,7 +8,8 @@ async function verifyEmail() {
         await sendClosingNotification(
             'Test Buyer',
             'testbuyer@example.com',
-            '2025-12-25'
+            '2025-12-25',
+            10 // Test with 10 days until closing
         );
         console.log('✅ Email sent successfully!');
     } catch (error) {
