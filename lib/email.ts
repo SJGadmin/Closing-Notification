@@ -5,7 +5,7 @@ const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
-const NOTIFICATION_EMAIL = 'grant@stewartandjane.com';
+const NOTIFICATION_EMAILS = ['grant@stewartandjane.com', 'julie@stewartandjane.com'];
 
 export interface ClosingInfo {
     buyerName: string;
@@ -103,7 +103,7 @@ export async function sendConsolidatedClosingNotification(closings: ClosingInfo[
 
     const mailOptions = {
         from: `"SISU Notifier" <${SMTP_USER}>`,
-        to: NOTIFICATION_EMAIL,
+        to: NOTIFICATION_EMAILS.join(', '),
         subject,
         text: textBody,
         html: htmlBody,
