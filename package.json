@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@types/nodemailer": "^7.0.4",
-    "next": "16.0.3",
+    "next": "^16.1.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "zod": "^4.1.13"
   },
   "devDependencies": {
@@ -23,7 +23,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.0.3",
+    "eslint-config-next": "^16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
