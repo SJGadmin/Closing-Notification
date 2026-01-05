@@ -45,10 +45,10 @@ export async function sendConsolidatedClosingNotification(closings: ClosingInfo[
     // Create subject line
     const subject = closings.length === 1
         ? `${urgencyEmoji} Closing in ${sortedClosings[0].daysUntil} days: ${sortedClosings[0].buyerName}`
-        : `${urgencyEmoji} ${closings.length} Upcoming Closings (next 10 days)`;
+        : `${urgencyEmoji} ${closings.length} Upcoming Closings (next 15 days)`;
 
     // Build text version
-    let textBody = `Hello Grant,\n\nYou have ${closings.length} transaction${closings.length > 1 ? 's' : ''} closing within the next 10 days:\n\n`;
+    let textBody = `Hello Grant,\n\nYou have ${closings.length} transaction${closings.length > 1 ? 's' : ''} closing within the next 15 days:\n\n`;
 
     sortedClosings.forEach((closing, idx) => {
         const daysText = closing.daysUntil === 0 ? 'TODAY' :
@@ -68,7 +68,7 @@ export async function sendConsolidatedClosingNotification(closings: ClosingInfo[
       <div style="font-family: sans-serif; padding: 20px; max-width: 600px;">
         <h2>${urgencyEmoji} Upcoming Closing Reminder${closings.length > 1 ? 's' : ''}</h2>
         <p>Hello Grant,</p>
-        <p>You have <strong>${closings.length} transaction${closings.length > 1 ? 's' : ''}</strong> closing within the next 10 days:</p>
+        <p>You have <strong>${closings.length} transaction${closings.length > 1 ? 's' : ''}</strong> closing within the next 15 days:</p>
         <div style="margin-top: 20px;">
     `;
 

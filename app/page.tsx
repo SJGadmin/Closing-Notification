@@ -45,7 +45,7 @@ export default function Home() {
             SISU Closing Notifier
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Manual check for upcoming closings within the next 10 days
+            Manual check for upcoming closings within the next 15 days
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export default function Home() {
               Run Manual Check
             </h2>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              This will check SISU for active clients and send email notifications for any closings within 10 days.
+              This will check SISU for active clients and send email notifications for any closings within 15 days.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export default function Home() {
 
                 {result.notificationsSent === 0 && (
                   <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    No closings found within the next 10 days.
+                    No closings found within the next 15 days.
                   </div>
                 )}
               </div>

@@ -37,8 +37,8 @@ export async function GET(request: Request) {
         }
 
         for (const client of clients) {
-            // Check if closing is within the next 10 days
-            if (isWithinDays(client.forecasted_closed_dt, 10)) {
+            // Check if closing is within the next 15 days
+            if (isWithinDays(client.forecasted_closed_dt, 15)) {
                 const daysUntil = getDaysUntil(client.forecasted_closed_dt);
                 console.log(`Match found: ${client.first_name} ${client.last_name} closes in ${daysUntil} days on ${client.forecasted_closed_dt}`);
 
