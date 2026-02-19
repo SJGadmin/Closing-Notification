@@ -5,7 +5,7 @@ const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
-const NOTIFICATION_EMAILS = ['grant@stewartandjane.com', 'julie@stewartandjane.com'];
+const NOTIFICATION_EMAILS = ['grant@stewartandjane.com', 'julie@stewartandjane.com', 'justin@stewartandjane.com'];
 
 export interface ClosingInfo {
     buyerName: string;
